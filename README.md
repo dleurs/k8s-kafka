@@ -228,5 +228,7 @@ mt-broker-ingress-769b458fd-nkjzt      1/1     Running   0          9m11s
 ```bash
 kubectl apply --filename https://github.com/knative/eventing-contrib/releases/download/v0.16.0/kafka-source.yaml
 ```
-## Use Kafka
+## HelloWorld using Knative Eventing
+https://knative.dev/docs/eventing/samples/helloworld/helloworld-go/
+```bash
 ```

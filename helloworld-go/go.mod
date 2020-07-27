@@ -1,3 +1,3 @@
-module github.com/knative/docs/docs/serving/samples/hello-world/helloworld-go
+module github.com/dleurs/k8s-kafka/helloworld-go
 
 go 1.14
