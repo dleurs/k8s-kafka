@@ -94,9 +94,24 @@ kubectl apply --filename https://github.com/knative/net-istio/releases/download/
 https://knative.dev/docs/install/any-kubernetes-cluster/#installing-the-eventing-component
 ```bash
 kubectl apply --filename https://github.com/knative/eventing/releases/download/v0.16.0/eventing-crds.yaml
+```
+```bash
 kubectl apply --filename https://github.com/knative/eventing/releases/download/v0.16.0/eventing-core.yaml
 ```
-nstall a default Channel (messaging) layer (alphabetical) > Apache Kafka
+
+[Not sure ] Add kafkachannels to ClusterRole knative-eventing-controller in eventing-core.yaml
+```bash
+[Not sure ]- # Kafka
+[Not sure ]  apiGroups:
+[Not sure ]  - "kafkachannels.messaging.knative.dev"
+[Not sure ]  resources:
+[Not sure ]  - "kafkachannels"
+[Not sure ]  verbs: *everything
+```
+```bash
+[Not sure ] kubectl apply -f eventing-core.yaml
+```
+Install a default Channel (messaging) layer (alphabetical) > Apache Kafka
 ```bash
 kubectl create namespace kafka
 ```
@@ -202,16 +217,39 @@ mt-broker-filter-5d994fb97f-46qf8      1/1     Running   0          9m12s
 mt-broker-ingress-769b458fd-nkjzt      1/1     Running   0          9m11s
 ```
 
-(required ?) Apache Kafka Source
+Apache Kafka Source
 ```bash
 kubectl apply --filename https://github.com/knative/eventing-contrib/releases/download/v0.16.0/kafka-source.yaml
 ```
-## Guide Knative Eventing
-https://knative.dev/docs/eventing/getting-started/
-1. Installing the Knative Eventing component
-2. Creating and configuring Knative Eventing Resources
-3. Sending events with HTTP requests
-4. Verifying events were sent correctly
-```bash
 
+## Guide to Apache Kafka on Knative eventing
+https://knative.dev/docs/eventing/samples/kafka/source/index.html
+
+## Guide Knative Eventing [Not Working because we use Apache Kafka]
+https://knative.dev/docs/eventing/getting-started/
+1. Creating and configuring Knative Eventing Resources
+2. Sending events with HTTP requests
+3. Verifying events were sent correctly
+
+## 1. Creating and configuring Knative Eventing Resources
+```bash
+kubectl create namespace event-example
+```
+```bash
+cat <<EOF | kubectl apply -f - 
+apiVersion: eventing.knative.dev/v1
+kind: Broker
+metadata:
+  name: default
+  namespace: event-example
+EOF
+```
+```bash
+kubectl --namespace event-example get Broker default
+```
+```bash
+```
+```bash
+```
+```bash
 ```
