@@ -90,28 +90,6 @@ Knative Istio controller
 kubectl apply --filename https://github.com/knative/net-istio/releases/download/v0.16.0/release.yaml
 ```
 
-Install helm 3<br/>
-https://helm.sh/docs/intro/install/
-```bash
-curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
-chmod 700 get_helm.sh
-./get_helm.sh
-```
-
-```bash
-kubectl create namespace kafka
-```
-
-```bash
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm install my-release bitnami/kafka
-```
-```bash
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm show values bitnami/kafka > config.yaml
-helm install my-release bitnami/kafka
-```
-
 ## Install Knative Eventing
 https://knative.dev/docs/install/any-kubernetes-cluster/#installing-the-eventing-component
 ```bash
@@ -228,7 +206,12 @@ mt-broker-ingress-769b458fd-nkjzt      1/1     Running   0          9m11s
 ```bash
 kubectl apply --filename https://github.com/knative/eventing-contrib/releases/download/v0.16.0/kafka-source.yaml
 ```
-## HelloWorld using Knative Eventing
-https://knative.dev/docs/eventing/samples/helloworld/helloworld-go/
+## Guide Knative Eventing
+https://knative.dev/docs/eventing/getting-started/
+1. Installing the Knative Eventing component
+2. Creating and configuring Knative Eventing Resources
+3. Sending events with HTTP requests
+4. Verifying events were sent correctly
 ```bash
+
 ```
