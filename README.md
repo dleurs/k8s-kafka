@@ -223,7 +223,109 @@ kubectl apply --filename https://github.com/knative/eventing-contrib/releases/do
 ```
 
 ## Guide to Apache Kafka on Knative eventing
-https://knative.dev/docs/eventing/samples/kafka/source/index.html
+https://knative.dev/docs/eventing/samples/kafka/binding/
+
+```bash
+kubectl apply -f https://storage.googleapis.com/knative-releases/eventing-contrib/latest/kafka-source.yaml
+```
+```bash
+kubectl get pods --namespace knative-sources
+
+NAME                         READY     STATUS    RESTARTS   AGE
+kafka-controller-manager-0   1/1       Running   0          42m
+```
+```yaml
+cat <<EOF | kubectl apply -f -
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: event-display
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "1" # No scale to zero
+    spec:
+      containers:
+        - image: gcr.io/knative-releases/knative.dev/eventing-contrib/cmd/event_display 
+EOF
+```
+
+```yaml
+cat <<EOF | kubectl apply -f - 
+apiVersion: sources.knative.dev/v1beta1
+kind: KafkaSource
+metadata:
+  name: kafka-source
+spec:
+  consumerGroup: knative-group
+  bootstrapServers:
+    - my-cluster-kafka-bootstrap.kafka:9092 #note the kafka namespace
+  topics:
+    - logs
+  sink:
+    ref:
+      apiVersion: serving.knative.dev/v1
+      kind: Service
+      name: event-display
+EOF
+```
+
+```yaml
+cat <<EOF | kubectl apply -f - 
+apiVersion: bindings.knative.dev/v1beta1
+kind: KafkaBinding
+metadata:
+  name: kafka-binding-test
+spec:
+  subject:
+    apiVersion: batch/v1
+    kind: Job
+    selector:
+      matchLabels:
+        kafka.topic: "logs"
+  bootstrapServers:
+    - my-cluster-kafka-bootstrap.kafka:9092
+EOF
+```
+```yaml
+cat <<EOF | kubectl apply -f -
+apiVersion: batch/v1
+kind: Job
+metadata:
+  labels:
+    kafka.topic: "logs"
+  name: kafka-publisher-job
+  namespace: default
+spec:
+  backoffLimit: 1
+  completions: 1
+  parallelism: 1
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      restartPolicy: Never
+      containers:
+        - image: docker.io/murugappans/kafka-publisher-1974f83e2ff7c8994707b5e8731528e8@sha256:fd79490514053c643617dc72a43097251fed139c966fd5d131134a0e424882de
+          env:
+            - name: KAFKA_TOPIC
+              value: "logs"
+            - name: KAFKA_KEY
+              value: "0"
+            - name: KAFKA_HEADERS
+              value: "content-type:application/json"
+            - name: KAFKA_VALUE
+              value: '{"msg":"This is a test!"}'
+          name: kafka-publisher
+EOF
+```
+```bash
+kubectl get pod
+kubectl logs event-display-rc8b4-deployment-685f57547c-gqdrn user-container
+```
+
 
 ## Guide Knative Eventing [Not Working because we use Apache Kafka]
 https://knative.dev/docs/eventing/getting-started/
