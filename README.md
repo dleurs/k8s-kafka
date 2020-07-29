@@ -2,9 +2,23 @@
 
 ## Get a K8s cluster
 With OVH : https://www.ovh.com/manager/public-cloud/<br/>
-In OVH, three B2-7-FLEX (2 CPU, 7Go RAM) will do.<br/>
+In OVH, two (3 for Knative) B2-7-FLEX (2 CPU, 7Go RAM) will do.<br/>
 It will take around 15-20 minuts to setup.<br/>
 Then, get the kubeconfig and put it on ~/.kube/config
+
+# First solution for Kafka on k8s : 
+https://phoenixnap.com/kb/kafka-on-kubernetes
+
+
+
+
+
+
+
+
+
+
+# Second solution for Kafka on k8s : Using Knative
 
 ## Install Istio and Knative Serving 0.16
 https://knative.dev/docs/install/any-kubernetes-cluster/
@@ -89,8 +103,7 @@ Knative Istio controller
 ```bash
 kubectl apply --filename https://github.com/knative/net-istio/releases/download/v0.16.0/release.yaml
 ```
-
-## Install Knative Eventing
+## Install Knative Eventing [Second branch]
 https://knative.dev/docs/install/any-kubernetes-cluster/#installing-the-eventing-component
 ```bash
 kubectl apply --filename https://github.com/knative/eventing/releases/download/v0.16.0/eventing-crds.yaml
