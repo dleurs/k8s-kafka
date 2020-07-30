@@ -7,27 +7,74 @@ It will take around 15-20 minuts to setup.<br/>
 Then, get the kubeconfig and put it on ~/.kube/config
 
 # First solution for Kafka on k8s : 
-https://phoenixnap.com/kb/kafka-on-kubernetes
+https://itnext.io/kafka-on-kubernetes-the-strimzi-way-part-1-bdff3e451788<br/>
+https://strimzi.io/quickstarts/<>
 
 <img src="/assets/kafka-schema.png">
 ```bash
-kubectl create namespace kafka
+helm repo add strimzi https://strimzi.io/charts/
 ```
 
 ```bash
+helm install strimzi-kafka strimzi/strimzi-kafka-operator
+```
+Show Custom Resource Definition
+```bash
+kubectl get crd | grep strimzi
+```
+As mentioned, we will keep things simple and start off with the following setup (which we will incrementally update as a part of subsequent posts in this series):
+- A single node Kafka cluster (and Zookeeper)
+- Available internally to clients in the same Kubernetes cluster
+- No encryption, authentication or authorization
+- No persistence (uses emptyDir volume)
+To deploy a Kafka cluster all we need to do is create a Strimzi Kafka resource. This is what it looks like:
+```bash
+cat <<EOF | kubectl apply -f - 
+apiVersion: kafka.strimzi.io/v1beta1
+kind: Kafka
+metadata:
+  name: my-kafka-cluster
+spec:
+  kafka:
+    version: 2.4.0
+    replicas: 1
+    listeners:
+      plain: {}
+    config:
+      offsets.topic.replication.factor: 1
+      transaction.state.log.replication.factor: 1
+      transaction.state.log.min.isr: 1
+      log.message.format.version: "2.4"
+    storage:
+      type: ephemeral
+  zookeeper:
+    replicas: 1
+    storage:
+      type: ephemeral
+EOF
 ```
 
 ```bash
+kubectl get kafka
+kubectl get statefulset
+kubectl get pod
+kubectl get configmap
+kubectl get svc
+kubectl get secret
 ```
 
+In one pod, create a producer
 ```bash
+export KAFKA_CLUSTER_NAME=my-kafka-cluster
+kubectl run kafka-producer -ti --image=strimzi/kafka:latest-kafka-2.4.0 --rm=true --restart=Never -- bin/kafka-console-producer.sh --broker-list $KAFKA_CLUSTER_NAME-kafka-bootstrap:9092 --topic my-topic
+```
+In another pod, create a consumer
+```bash
+export KAFKA_CLUSTER_NAME=my-kafka-cluster
+kubectl run kafka-consumer -ti --image=strimzi/kafka:latest-kafka-2.4.0 --rm=true --restart=Never -- bin/kafka-console-consumer.sh --bootstrap-server $KAFKA_CLUSTER_NAME-kafka-bootstrap:9092 --topic my-topic --from-beginning
 ```
 
-```bash
-```
-
-```bash
-```
+Write stuff on the producer, it will appear in the consumer
 
 
 
