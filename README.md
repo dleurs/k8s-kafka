@@ -9,7 +9,25 @@ Then, get the kubeconfig and put it on ~/.kube/config
 # First solution for Kafka on k8s : 
 https://phoenixnap.com/kb/kafka-on-kubernetes
 
+<img src="/assets/kafka-schema.png">
+```bash
+kubectl create namespace kafka
+```
 
+```bash
+```
+
+```bash
+```
+
+```bash
+```
+
+```bash
+```
+
+```bash
+```
 
 
 
@@ -103,26 +121,13 @@ Knative Istio controller
 ```bash
 kubectl apply --filename https://github.com/knative/net-istio/releases/download/v0.16.0/release.yaml
 ```
-## Install Knative Eventing [Second branch]
+## Install Knative Eventing 
 https://knative.dev/docs/install/any-kubernetes-cluster/#installing-the-eventing-component
 ```bash
 kubectl apply --filename https://github.com/knative/eventing/releases/download/v0.16.0/eventing-crds.yaml
 ```
 ```bash
 kubectl apply --filename https://github.com/knative/eventing/releases/download/v0.16.0/eventing-core.yaml
-```
-
-[Not sure ] Add kafkachannels to ClusterRole knative-eventing-controller in eventing-core.yaml
-```bash
-[Not sure ]- # Kafka
-[Not sure ]  apiGroups:
-[Not sure ]  - "kafkachannels.messaging.knative.dev"
-[Not sure ]  resources:
-[Not sure ]  - "kafkachannels"
-[Not sure ]  verbs: *everything
-```
-```bash
-[Not sure ] kubectl apply -f eventing-core.yaml
 ```
 Install a default Channel (messaging) layer (alphabetical) > Apache Kafka
 ```bash
@@ -236,6 +241,7 @@ kubectl apply --filename https://github.com/knative/eventing-contrib/releases/do
 ```
 
 ## Guide to Apache Kafka on Knative eventing
+https://knative.dev/docs/eventing/samples/kafka/
 https://knative.dev/docs/eventing/samples/kafka/binding/
 
 ```bash
