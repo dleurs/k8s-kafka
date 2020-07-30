@@ -75,9 +75,51 @@ kubectl run kafka-consumer -ti --image=strimzi/kafka:latest-kafka-2.4.0 --rm=tru
 ```
 
 Write stuff on the producer, it will appear in the consumer
+<br/>
+https://itnext.io/kafka-on-kubernetes-the-strimzi-way-part-2-43192f1dd831
+<br/>
 
 
+```bash
+```bash
+cat <<EOF | kubectl replace -f - 
+apiVersion: kafka.strimzi.io/v1beta1
+kind: Kafka
+metadata:
+  name: my-kafka-cluster
+spec:
+  kafka:
+    version: 2.4.0
+    replicas: 1
+    listeners:
+      plain: {}
+      external:
+        type: loadbalancer
+        tls: true
+    config:
+      offsets.topic.replication.factor: 1
+      transaction.state.log.replication.factor: 1
+      transaction.state.log.min.isr: 1
+      log.message.format.version: "2.4"
+    storage:
+      type: ephemeral
+  zookeeper:
+    replicas: 1
+    storage:
+      type: ephemeral
+EOF
+```
+Setup TLS
+```bash
+kubectl get secret $CLUSTER_NAME-cluster-ca-cert -o jsonpath='{.data.ca\.crt}' | base64 --decode > ca.crt
+kubectl get secret $CLUSTER_NAME-cluster-ca-cert -o jsonpath='{.data.ca\.password}' | base64 --decode > ca.password
+```
+```bash
+export CERT_FILE_PATH=ca.crt
+export CERT_PASSWORD_FILE_PATH=ca.password
 
+
+```
 
 
 
