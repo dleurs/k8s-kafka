@@ -94,6 +94,10 @@ helm install strimzi-kafka strimzi/strimzi-kafka-operator
 ```
 
 ```bash
+kubectl get pod
+```
+
+```bash
 cat << EOF > ./kafka-settings.yaml
 apiVersion: kafka.strimzi.io/v1beta1
 kind: Kafka
@@ -175,27 +179,48 @@ ssl.truststore.password=changeit
 EOF
 ```
 
-(Download Kafka cli : https://kafka.apache.org/downloads, or just)
-```bash
-brew install kafka
-```
-
 ```bash
 kubectl get svc ${CLUSTER_NAME}-kafka-0
 ```
 ```bash
-export LOADBALANCER_PUBLIC_IP=51.210.210.192
+export LOADBALANCER_PUBLIC_IP=51.210.XXX.XXX
+export KAFKA_SERVER=$LOADBALANCER_PUBLIC_IP:9094
 export TOPIC_NAME=test-strimzi-topic
 ```
+
+Download Kafka cli : https://kafka.apache.org/downloads, or for Mac, just :
+```bash
+brew install kafka
+
+kafka-[USING TAB ON KEYBOARD]
+```
+
 ```bash
 # On one terminal
-kafka-console-producer --broker-list $LOADBALANCER_PUBLIC_IP:9094 --topic $TOPIC_NAME --producer.config client-ssl.properties
+kafka-console-producer --broker-list $KAFKA_SERVER --topic $TOPIC_NAME --producer.config client-ssl.properties
 ```
 ```bash
+kafka-topics --bootstrap-server $KAFKA_SERVER --list --command-config client-ssl.properties
+```
+```bash 
 # On another terminal
-export LOADBALANCER_PUBLIC_IP=51.210.210.192
+export CLUSTER_NAME=my-kafka-cluster
+kubectl get svc ${CLUSTER_NAME}-kafka-0
+
+export LOADBALANCER_PUBLIC_IP=51.210.XXX.XXX
+export KAFKA_SERVER=$LOADBALANCER_PUBLIC_IP:9094
 export TOPIC_NAME=test-strimzi-topic
-kafka-console-consumer --bootstrap-server $LOADBALANCER_PUBLIC_IP:9094 --topic $TOPIC_NAME --consumer.config client-ssl.properties --from-beginning
+kafka-console-consumer --bootstrap-server $KAFKA_SERVER --topic $TOPIC_NAME --consumer.config client-ssl.properties --from-beginning
+```
+
+
+```bash
+cp ca.crt kafka-nodejs;
+cd kafka-nodejs;
+kubectl get svc ${CLUSTER_NAME}-kafka-external-bootstrap
+export KAFKA_BOOTSTRAP_SERVER=51.210.XXX.XXX:9094; # Ip address with :9094
+export CA_CERT_LOCATION="./ca.crt"
+echo $KAFKA_TOPIC; # test-strimzi-topic
 ```
 
 
