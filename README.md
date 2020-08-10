@@ -8,7 +8,7 @@ Then, get the kubeconfig and put it on ~/.kube/config
 
 # First solution for Kafka on k8s : 
 https://itnext.io/kafka-on-kubernetes-the-strimzi-way-part-1-bdff3e451788<br/>
-https://strimzi.io/quickstarts/<>
+https://strimzi.io/quickstarts/
 
 <img src="/assets/kafka-schema.png">
 ```bash
@@ -75,14 +75,26 @@ kubectl run kafka-consumer -ti --image=strimzi/kafka:latest-kafka-2.4.0 --rm=tru
 ```
 
 Write stuff on the producer, it will appear in the consumer
-<br/>
-https://itnext.io/kafka-on-kubernetes-the-strimzi-way-part-2-43192f1dd831
-<br/>
 
 
+# First solution part 2
+https://itnext.io/kafka-on-kubernetes-the-strimzi-way-part-2-43192f1dd831<br/>
+https://strimzi.io/docs/operators/0.19.0/using.html#deploying-cluster-operator-helm-chart-str
+
 ```bash
+#kubectl create namespace kafka
+```
+
 ```bash
-cat <<EOF | kubectl replace -f - 
+helm repo add strimzi https://strimzi.io/charts/
+```
+
+```bash
+helm install strimzi-kafka strimzi/strimzi-kafka-operator
+```
+
+```bash
+cat << EOF > ./kafka-settings.yaml
 apiVersion: kafka.strimzi.io/v1beta1
 kind: Kafka
 metadata:
@@ -104,26 +116,91 @@ spec:
     storage:
       type: ephemeral
   zookeeper:
-    replicas: 1
+    replicas: 1 # Set to three for production
     storage:
       type: ephemeral
 EOF
 ```
+
+```bash
+kubectl apply -f kafka-settings.yaml
+```
+
+```bash
+kubectl get pod
+```
+```bash
+NAME                                        READY   STATUS    RESTARTS   AGE
+my-kafka-cluster-kafka-0                    2/2     Running   0          5m25s
+my-kafka-cluster-zookeeper-0                1/1     Running   0          8m59s
+strimzi-cluster-operator-7d6cd6bdf7-p267g   1/1     Running   0          18m
+```
+
 Setup TLS
 ```bash
+export CLUSTER_NAME=my-kafka-cluster
 kubectl get secret $CLUSTER_NAME-cluster-ca-cert -o jsonpath='{.data.ca\.crt}' | base64 --decode > ca.crt
 kubectl get secret $CLUSTER_NAME-cluster-ca-cert -o jsonpath='{.data.ca\.password}' | base64 --decode > ca.password
 ```
 ```bash
 export CERT_FILE_PATH=ca.crt
 export CERT_PASSWORD_FILE_PATH=ca.password
+export PASSWORD=`cat $CERT_PASSWORD_FILE_PATH`
+export KEYSTORE_LOCATION=/Library/Java/JavaVirtualMachines/jdk1.8.0_181.jdk/Contents/Home/jre/lib/security/cacerts
+export CA_CERT_ALIAS=strimzi-kafka-cert
+```
+```bash
+sudo keytool -importcert -alias $CA_CERT_ALIAS -file $CERT_FILE_PATH -keystore $KEYSTORE_LOCATION -keypass $PASSWORD
+#computer password
+#changeit
+#yes
 
+#to delete
+# sudo keytool -delete -alias $CA_CERT_ALIAS -keystore $KEYSTORE_LOCATION
+```
+```bash
+sudo keytool -list -alias $CA_CERT_ALIAS -keystore $KEYSTORE_LOCATION
+#changeit
+#yes
+```
+```bash
+kubectl get svc ${CLUSTER_NAME}-kafka-external-bootstrap
+```
+```bash
+cat << EOF > ./client-ssl.properties
+bootstrap.servers=[LOADBALANCER_PUBLIC_IP]:9094
+security.protocol=SSL
+ssl.truststore.location=[TRUSTSTORE_LOCATION]
+ssl.truststore.password=changeit
+EOF
+```
 
+(Download Kafka cli : https://kafka.apache.org/downloads, or just)
+```bash
+brew install kafka
+```
+
+```bash
+kubectl get svc ${CLUSTER_NAME}-kafka-0
+```
+```bash
+export LOADBALANCER_PUBLIC_IP=51.210.210.192
+export TOPIC_NAME=test-strimzi-topic
+```
+```bash
+# On one terminal
+kafka-console-producer --broker-list $LOADBALANCER_PUBLIC_IP:9094 --topic $TOPIC_NAME --producer.config client-ssl.properties
+```
+```bash
+# On another terminal
+export LOADBALANCER_PUBLIC_IP=51.210.210.192
+export TOPIC_NAME=test-strimzi-topic
+kafka-console-consumer --bootstrap-server $LOADBALANCER_PUBLIC_IP:9094 --topic $TOPIC_NAME --consumer.config client-ssl.properties --from-beginning
 ```
 
 
 
-
+# Other solution : IBM my-eventstreams / Katherine Stanley
 
 # Second solution for Kafka on k8s : Using Knative
 
